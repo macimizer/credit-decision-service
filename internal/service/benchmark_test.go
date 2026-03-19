@@ -15,6 +15,6 @@ func BenchmarkRuleBasedDecisionEngine_Evaluate(b *testing.B) {
 
 	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
-		_, _ = engine.Evaluate(client, bank, credit)
+		_, _ = engine.Evaluate(client, bank, credit, 72)
 	}
 }
