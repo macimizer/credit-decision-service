@@ -4,8 +4,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/require"
 	"github.com/macimizer/credit-decision-service/internal/domain"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRuleBasedDecisionEngine_EvaluateApproved(t *testing.T) {

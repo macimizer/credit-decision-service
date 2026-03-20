@@ -9,10 +9,10 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/macimizer/credit-decision-service/internal/observability"
 	redispkg "github.com/macimizer/credit-decision-service/internal/platform/redispkg"
 	"github.com/macimizer/credit-decision-service/internal/service"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type RouterParams struct {

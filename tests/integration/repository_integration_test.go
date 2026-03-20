@@ -29,7 +29,9 @@ func TestClientAndCreditRepositories(t *testing.T) {
 
 	db, err := sql.Open("pgx", dsn)
 	require.NoError(t, err)
-	defer db.Close()
+	t.Cleanup(func() {
+		require.NoError(t, db.Close())
+	})
 
 	ctx := context.Background()
 	require.NoError(t, postgresplatform.Migrate(ctx, db))
