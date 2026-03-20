@@ -23,7 +23,9 @@ func (r *CreditRepository) Create(ctx context.Context, credit domain.Credit) err
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
 
-	_, err := r.db.ExecContext(ctx, query,
+	_, err := r.db.ExecContext(
+		ctx,
+		query,
 		credit.ID,
 		credit.ClientID,
 		credit.BankID,
@@ -63,14 +65,13 @@ func (r *CreditRepository) GetByID(ctx context.Context, id string) (domain.Credi
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Credit{}, domain.ErrNotFound
 		}
-
 		return domain.Credit{}, fmt.Errorf("get credit by id: %w", err)
 	}
 
 	return credit, nil
 }
 
-func (r *CreditRepository) List(ctx context.Context) ([]domain.Credit, error) {
+func (r *CreditRepository) List(ctx context.Context) (credits []domain.Credit, err error) {
 	const query = `
 		SELECT id, client_id, bank_id, min_payment, max_payment, term_months, credit_type, created_at, status
 		FROM credits
@@ -81,12 +82,20 @@ func (r *CreditRepository) List(ctx context.Context) ([]domain.Credit, error) {
 	if err != nil {
 		return nil, fmt.Errorf("list credits: %w", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			if err == nil {
+				err = fmt.Errorf("close credits rows: %w", closeErr)
+			} else {
+				err = fmt.Errorf("%w; close credits rows: %v", err, closeErr)
+			}
+		}
+	}()
 
-	credits := make([]domain.Credit, 0)
+	credits = make([]domain.Credit, 0)
 	for rows.Next() {
 		var credit domain.Credit
-		if err := rows.Scan(
+		if scanErr := rows.Scan(
 			&credit.ID,
 			&credit.ClientID,
 			&credit.BankID,
@@ -96,13 +105,13 @@ func (r *CreditRepository) List(ctx context.Context) ([]domain.Credit, error) {
 			&credit.CreditType,
 			&credit.CreatedAt,
 			&credit.Status,
-		); err != nil {
-			return nil, fmt.Errorf("scan credit: %w", err)
+		); scanErr != nil {
+			return nil, fmt.Errorf("scan credit: %w", scanErr)
 		}
 		credits = append(credits, credit)
 	}
 
-	if err := rows.Err(); err != nil {
+	if err = rows.Err(); err != nil {
 		return nil, fmt.Errorf("iterate credits: %w", err)
 	}
 

@@ -31,7 +31,11 @@ func main() {
 		logger.Error("failed to connect to postgres", slog.Any("error", err))
 		os.Exit(1)
 	}
-	defer db.Close()
+	defer func() {
+		if closeErr := db.Close(); closeErr != nil {
+			logger.Warn("failed to close postgres connection", slog.Any("error", closeErr))
+		}
+	}()
 
 	if cfg.AutoMigrate {
 		migrateCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
